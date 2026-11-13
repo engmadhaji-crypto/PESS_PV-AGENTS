@@ -1,0 +1,247 @@
+{
+  "entities": {
+    "Customer": {
+      "title": "Customer",
+      "description": "A customer profile with contact details owned by a merchant user.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Authenticated Firebase UID of the owner."
+        },
+        "fullName": {
+          "type": "string",
+          "description": "Customer full name."
+        },
+        "phone": {
+          "type": "string",
+          "description": "Customer primary phone number."
+        },
+        "nationalId": {
+          "type": "string",
+          "description": "Optional national ID or reference number."
+        },
+        "address": {
+          "type": "string",
+          "description": "Optional customer address."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Optional notes on the customer."
+        },
+        "clientCreatedAtMillis": {
+          "type": "integer",
+          "description": "Client creation epoch milliseconds for Room sync ordering."
+        },
+        "clientUpdatedAtMillis": {
+          "type": "integer",
+          "description": "Client update epoch milliseconds for Room sync ordering."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp written via FieldValue.serverTimestamp()."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server update timestamp written via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": [
+        "userId",
+        "fullName",
+        "phone",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "InstallmentPlan": {
+      "title": "InstallmentPlan",
+      "description": "An installment contract belonging to a customer.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Authenticated Firebase UID of the owner."
+        },
+        "customerId": {
+          "type": "string",
+          "description": "Parent customer document ID."
+        },
+        "itemName": {
+          "type": "string",
+          "description": "Financed item or contract title."
+        },
+        "totalCashPrice": {
+          "type": "number",
+          "description": "Total cash price of the item."
+        },
+        "downPayment": {
+          "type": "number",
+          "description": "Upfront down payment amount."
+        },
+        "interestRatePercent": {
+          "type": "number",
+          "description": "Profit or interest percentage applied to the financed balance."
+        },
+        "financedTotal": {
+          "type": "number",
+          "description": "Total amount financed across installments."
+        },
+        "installmentCount": {
+          "type": "integer",
+          "description": "Number of scheduled installments."
+        },
+        "intervalMonths": {
+          "type": "integer",
+          "description": "Months between consecutive installments."
+        },
+        "startDateMillis": {
+          "type": "integer",
+          "description": "First installment start epoch milliseconds."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["ACTIVE", "COMPLETED", "OVERDUE"],
+          "description": "Lifecycle status of the installment plan."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Optional contract notes."
+        },
+        "clientCreatedAtMillis": {
+          "type": "integer",
+          "description": "Client creation epoch milliseconds for Room sync."
+        },
+        "clientUpdatedAtMillis": {
+          "type": "integer",
+          "description": "Client update epoch milliseconds for Room sync."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp written via FieldValue.serverTimestamp()."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server update timestamp written via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": [
+        "userId",
+        "customerId",
+        "itemName",
+        "totalCashPrice",
+        "downPayment",
+        "interestRatePercent",
+        "financedTotal",
+        "installmentCount",
+        "intervalMonths",
+        "startDateMillis",
+        "status",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Installment": {
+      "title": "Installment",
+      "description": "An individual scheduled installment payment belonging to a plan and customer.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Authenticated Firebase UID of the owner."
+        },
+        "planId": {
+          "type": "string",
+          "description": "Parent installment plan document ID."
+        },
+        "customerId": {
+          "type": "string",
+          "description": "Parent customer document ID."
+        },
+        "installmentNumber": {
+          "type": "integer",
+          "description": "1-based sequence number of this installment."
+        },
+        "dueDateMillis": {
+          "type": "integer",
+          "description": "Installment due date in epoch milliseconds."
+        },
+        "amountDue": {
+          "type": "number",
+          "description": "Scheduled amount due for this installment."
+        },
+        "amountPaid": {
+          "type": "number",
+          "description": "Amount collected so far for this installment."
+        },
+        "paidDateMillis": {
+          "type": "integer",
+          "description": "Optional epoch milliseconds when payment was recorded."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["PENDING", "PAID", "PARTIAL", "OVERDUE"],
+          "description": "Payment status of the installment."
+        },
+        "paymentMethod": {
+          "type": "string",
+          "enum": ["CASH", "BANK_TRANSFER", "CARD"],
+          "description": "Method used to pay the installment."
+        },
+        "receiptNumber": {
+          "type": "string",
+          "description": "Optional payment receipt number."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Optional payment notes."
+        },
+        "clientUpdatedAtMillis": {
+          "type": "integer",
+          "description": "Client update epoch milliseconds for Room sync."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp written via FieldValue.serverTimestamp()."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server update timestamp written via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": [
+        "userId",
+        "planId",
+        "customerId",
+        "installmentNumber",
+        "dueDateMillis",
+        "amountDue",
+        "amountPaid",
+        "status",
+        "paymentMethod",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/customers/{customerId}": {
+      "schema": { "$ref": "#/entities/Customer" },
+      "description": "User-scoped customer records."
+    },
+    "/users/{userId}/plans/{planId}": {
+      "schema": { "$ref": "#/entities/InstallmentPlan" },
+      "description": "User-scoped installment plans linked to customers."
+    },
+    "/users/{userId}/installments/{installmentId}": {
+      "schema": { "$ref": "#/entities/Installment" },
+      "description": "User-scoped installment payment schedules linked to plans and customers."
+    }
+  }
+}

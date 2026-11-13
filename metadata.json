@@ -1,0 +1,6 @@
+{
+  "name": "نظام الأقساط",
+  "description": "تطبيق متكامل لإدارة الأقساط والعملاء والفواتير مع قاعدة بيانات محلية ومزامنة سحابية مع Google Sheets وتصدير كشوفات PDF.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

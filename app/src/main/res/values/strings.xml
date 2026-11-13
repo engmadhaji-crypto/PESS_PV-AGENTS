@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">نظام الأقساط</string>
+
+    <!-- Navigation -->
+    <string name="nav_dashboard">لوحة التحكم</string>
+    <string name="nav_customers">العملاء</string>
+    <string name="nav_ai">المساعد الذكي</string>
+    <string name="nav_sync">المزامنة</string>
+
+    <!-- Auth -->
+    <string name="auth_title">مرحباً بك في نظام الأقساط</string>
+    <string name="auth_subtitle">سجّل الدخول بحساب Google لحفظ بيانات عملائك وأقساطك سحابياً عبر Firebase والاستفادة من المساعد الذكي Gemini.</string>
+    <string name="sign_in_with_google">تسجيل الدخول عبر Google</string>
+    <string name="sign_out">تسجيل الخروج</string>
+
+    <!-- Dashboard -->
+    <string name="dashboard_title">إدارة الأقساط</string>
+    <string name="dashboard_subtitle">ملخص المحفظة والتحصيل</string>
+    <string name="metric_total_portfolio">إجمالي المبيعات</string>
+    <string name="metric_total_collected">المحصّل</string>
+    <string name="metric_total_remaining">المتبقي</string>
+    <string name="metric_collection_rate">نسبة التحصيل</string>
+    <string name="metric_active_plans">عقود نشطة</string>
+    <string name="metric_overdue_count">أقساط متأخرة</string>
+    <string name="section_due_alerts">أقساط مستحقة ومتأخرة</string>
+    <string name="action_collect_now">تحصيل الآن</string>
+    <string name="action_add_customer">عميل جديد</string>
+    <string name="action_sync_now">مزامنة سحابية</string>
+    <string name="empty_alerts_title">كل الأقساط منتظمة</string>
+    <string name="empty_alerts_subtitle">لا توجد أقساط متأخرة أو مستحقة حالياً.</string>
+
+    <!-- Customers -->
+    <string name="customers_title">سجل العملاء</string>
+    <string name="search_customers_hint">ابحث بالاسم أو رقم الهاتف...</string>
+    <string name="filter_all">الكل</string>
+    <string name="filter_overdue">متأخرون</string>
+    <string name="filter_active">نشطون</string>
+    <string name="filter_completed">مكتمل</string>
+    <string name="empty_customers_title">لا يوجد عملاء بعد</string>
+    <string name="empty_customers_subtitle">ابدأ بإضافة أول عميل مع خطة التقسيط الخاصة به.</string>
+
+    <!-- Customer & Plan Details -->
+    <string name="customer_detail_title">ملف العميل</string>
+    <string name="export_pdf_statement">تصدير كشف PDF</string>
+    <string name="add_installment_plan">إضافة عقد تقسيط</string>
+    <string name="plan_detail_title">جدول الأقساط</string>
+    <string name="record_payment">تسجيل دفعة</string>
+
+    <!-- AI Assistant -->
+    <string name="ai_title">المساعد المالي الذكي</string>
+    <string name="ai_subtitle">مدعوم بـ Gemini عبر Firebase AI Logic</string>
+
+    <!-- Sync -->
+    <string name="sync_title">المزامنة السحابية</string>
+    <string name="sync_subtitle">Firebase Firestore و Google Sheets</string>
+    <string name="status_online">متصل بالإنترنت</string>
+    <string name="status_offline">غير متصل — وضع العمل المحلي</string>
+
+    <!-- Local Database Backup -->
+    <string name="backup_section_title">النسخ الاحتياطي لقاعدة البيانات</string>
+    <string name="backup_section_subtitle">تصدير أو استيراد قاعدة بيانات العملاء والعقود والأقساط كملف نسخة احتياطية آمن (JSON) بدون صلاحيات تخزين إضافية.</string>
+    <string name="export_database">تصدير قاعدة البيانات</string>
+    <string name="import_database">استيراد قاعدة بيانات</string>
+    <string name="import_dialog_title">استيراد نسخة احتياطية</string>
+    <string name="import_mode_merge">دمج وتحديث السجلات</string>
+    <string name="import_mode_replace">استبدال الكل</string>
+    <string name="action_cancel">إلغاء</string>
+</resources>

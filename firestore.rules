@@ -1,0 +1,220 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Default-Deny Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Global Hardened Primitives ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidOptionalString(data, key, maxLen) {
+      return !((key in data) && data[key] != null) ||
+             (data[key] is string && data[key].size() <= maxLen);
+    }
+
+    function isValidOptionalInt(data, key) {
+      return !((key in data) && data[key] != null) ||
+             (data[key] is int && data[key] >= 0);
+    }
+
+    // --- Entity Validation Blueprints ---
+    function isValidCustomer(data, userId) {
+      return data.userId is string &&
+             data.userId == userId &&
+             data.fullName is string && data.fullName.size() >= 1 && data.fullName.size() <= 120 &&
+             data.phone is string && data.phone.size() >= 1 && data.phone.size() <= 40 &&
+             isValidOptionalString(data, 'nationalId', 40) &&
+             isValidOptionalString(data, 'address', 250) &&
+             isValidOptionalString(data, 'notes', 1000) &&
+             isValidOptionalInt(data, 'clientCreatedAtMillis') &&
+             isValidOptionalInt(data, 'clientUpdatedAtMillis') &&
+             data.createdAt is timestamp &&
+             data.updatedAt is timestamp;
+    }
+
+    function isValidPlan(data, userId) {
+      return data.userId is string &&
+             data.userId == userId &&
+             isValidId(data.customerId) &&
+             data.itemName is string && data.itemName.size() >= 1 && data.itemName.size() <= 150 &&
+             data.totalCashPrice is number && data.totalCashPrice > 0 &&
+             data.downPayment is number && data.downPayment >= 0 && data.downPayment <= data.totalCashPrice &&
+             data.interestRatePercent is number && data.interestRatePercent >= 0 && data.interestRatePercent <= 500 &&
+             data.financedTotal is number && data.financedTotal >= 0 &&
+             data.installmentCount is int && data.installmentCount >= 1 && data.installmentCount <= 120 &&
+             data.intervalMonths is int && data.intervalMonths >= 1 && data.intervalMonths <= 12 &&
+             data.startDateMillis is int && data.startDateMillis >= 0 &&
+             data.status in ['ACTIVE', 'COMPLETED', 'OVERDUE'] &&
+             isValidOptionalString(data, 'notes', 1000) &&
+             isValidOptionalInt(data, 'clientCreatedAtMillis') &&
+             isValidOptionalInt(data, 'clientUpdatedAtMillis') &&
+             data.createdAt is timestamp &&
+             data.updatedAt is timestamp;
+    }
+
+    function isValidInstallment(data, userId) {
+      return data.userId is string &&
+             data.userId == userId &&
+             isValidId(data.planId) &&
+             isValidId(data.customerId) &&
+             data.installmentNumber is int && data.installmentNumber >= 1 && data.installmentNumber <= 120 &&
+             data.dueDateMillis is int && data.dueDateMillis >= 0 &&
+             data.amountDue is number && data.amountDue > 0 &&
+             data.amountPaid is number && data.amountPaid >= 0 && data.amountPaid <= data.amountDue + 0.01 &&
+             isValidOptionalInt(data, 'paidDateMillis') &&
+             data.status in ['PENDING', 'PAID', 'PARTIAL', 'OVERDUE'] &&
+             data.paymentMethod in ['CASH', 'BANK_TRANSFER', 'CARD'] &&
+             isValidOptionalString(data, 'receiptNumber', 80) &&
+             isValidOptionalString(data, 'notes', 1000) &&
+             isValidOptionalInt(data, 'clientUpdatedAtMillis') &&
+             data.createdAt is timestamp &&
+             data.updatedAt is timestamp;
+    }
+
+    // --- User-Scoped Subcollections ---
+    match /users/{userId} {
+      allow read, write: if false;
+
+      match /customers/{customerId} {
+        allow get: if isOwner(userId) && isValidId(customerId);
+        allow list: if isOwner(userId);
+
+        allow create: if isOwner(userId) &&
+                         isValidId(customerId) &&
+                         incoming().keys().hasAll(['userId', 'fullName', 'phone', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly([
+                           'userId', 'fullName', 'phone', 'nationalId', 'address', 'notes',
+                           'clientCreatedAtMillis', 'clientUpdatedAtMillis', 'createdAt', 'updatedAt'
+                         ]) &&
+                         isValidCustomer(incoming(), userId) &&
+                         incoming().createdAt <= request.time &&
+                         incoming().updatedAt <= request.time;
+
+        allow update: if isOwner(userId) &&
+                         isValidId(customerId) &&
+                         isValidCustomer(incoming(), userId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().updatedAt <= request.time &&
+                         incoming().diff(existing()).affectedKeys().hasOnly([
+                           'fullName', 'phone', 'nationalId', 'address', 'notes',
+                           'clientUpdatedAtMillis', 'updatedAt'
+                         ]);
+
+        allow delete: if isOwner(userId) && isValidId(customerId);
+      }
+
+      match /plans/{planId} {
+        allow get: if isOwner(userId) && isValidId(planId);
+        allow list: if isOwner(userId);
+
+        allow create: if isOwner(userId) &&
+                         isValidId(planId) &&
+                         incoming().keys().hasAll([
+                           'userId', 'customerId', 'itemName', 'totalCashPrice', 'downPayment',
+                           'interestRatePercent', 'financedTotal', 'installmentCount',
+                           'intervalMonths', 'startDateMillis', 'status', 'createdAt', 'updatedAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'userId', 'customerId', 'itemName', 'totalCashPrice', 'downPayment',
+                           'interestRatePercent', 'financedTotal', 'installmentCount',
+                           'intervalMonths', 'startDateMillis', 'status', 'notes',
+                           'clientCreatedAtMillis', 'clientUpdatedAtMillis', 'createdAt', 'updatedAt'
+                         ]) &&
+                         isValidPlan(incoming(), userId) &&
+                         incoming().createdAt <= request.time &&
+                         incoming().updatedAt <= request.time &&
+                         existsAfter(/databases/$(database)/documents/users/$(userId)/customers/$(incoming().customerId));
+
+        allow update: if isOwner(userId) &&
+                         isValidId(planId) &&
+                         isValidPlan(incoming(), userId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().customerId == existing().customerId &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().updatedAt <= request.time && (
+                           (existing().status != 'COMPLETED' &&
+                            incoming().diff(existing()).affectedKeys().hasOnly([
+                              'status', 'notes', 'clientUpdatedAtMillis', 'updatedAt'
+                            ])) ||
+                           (incoming().diff(existing()).affectedKeys().hasOnly([
+                             'notes', 'clientUpdatedAtMillis', 'updatedAt'
+                           ]))
+                         );
+
+        allow delete: if isOwner(userId) && isValidId(planId);
+      }
+
+      match /installments/{installmentId} {
+        allow get: if isOwner(userId) && isValidId(installmentId);
+        allow list: if isOwner(userId);
+
+        allow create: if isOwner(userId) &&
+                         isValidId(installmentId) &&
+                         incoming().keys().hasAll([
+                           'userId', 'planId', 'customerId', 'installmentNumber',
+                           'dueDateMillis', 'amountDue', 'amountPaid', 'status',
+                           'paymentMethod', 'createdAt', 'updatedAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'userId', 'planId', 'customerId', 'installmentNumber',
+                           'dueDateMillis', 'amountDue', 'amountPaid', 'paidDateMillis',
+                           'status', 'paymentMethod', 'receiptNumber', 'notes',
+                           'clientUpdatedAtMillis', 'createdAt', 'updatedAt'
+                         ]) &&
+                         isValidInstallment(incoming(), userId) &&
+                         incoming().createdAt <= request.time &&
+                         incoming().updatedAt <= request.time &&
+                         existsAfter(/databases/$(database)/documents/users/$(userId)/customers/$(incoming().customerId)) &&
+                         existsAfter(/databases/$(database)/documents/users/$(userId)/plans/$(incoming().planId));
+
+        allow update: if isOwner(userId) &&
+                         isValidId(installmentId) &&
+                         isValidInstallment(incoming(), userId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().planId == existing().planId &&
+                         incoming().customerId == existing().customerId &&
+                         incoming().installmentNumber == existing().installmentNumber &&
+                         incoming().amountDue == existing().amountDue &&
+                         incoming().dueDateMillis == existing().dueDateMillis &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().updatedAt <= request.time && (
+                           (existing().status != 'PAID' &&
+                            incoming().amountPaid >= existing().amountPaid &&
+                            incoming().diff(existing()).affectedKeys().hasOnly([
+                              'amountPaid', 'paidDateMillis', 'status', 'paymentMethod',
+                              'receiptNumber', 'notes', 'clientUpdatedAtMillis', 'updatedAt'
+                            ])) ||
+                           (existing().status in ['PENDING', 'PARTIAL'] &&
+                            incoming().status == 'OVERDUE' &&
+                            incoming().diff(existing()).affectedKeys().hasOnly([
+                              'status', 'clientUpdatedAtMillis', 'updatedAt'
+                            ]))
+                         );
+
+        allow delete: if isOwner(userId) && isValidId(installmentId);
+      }
+    }
+  }
+}
